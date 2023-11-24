@@ -1,0 +1,13 @@
+  // const handleKeyDown = (e: { key: string; preventDefault: () => void; }) => {
+  //   if ((e.key === 'Backspace' || e.key === 'Delete') && selectedOption) {
+  //     e.preventDefault(); // Prevent the browser default behavior
+  //     setSelectedOption(null); // Delete the selected option
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   document.addEventListener('keydown', handleKeyDown);
+  //   return () => {
+  //     document.removeEventListener('keydown', handleKeyDown);
+  //   };
+  // }, [selectedOption]); 
