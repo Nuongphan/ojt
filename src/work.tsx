@@ -4,7 +4,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { registerLocale } from "react-datepicker";
 import vi from "date-fns/locale/vi";
 import { MdDelete } from "react-icons/md";
-import { differenceInDays, format } from "date-fns";
+import { differenceInDays, format, formatDistance } from "date-fns";
 import { useDispatch, useSelector } from "react-redux";
 import CustomSelect, { Task } from "./task";
 import TaskList from "./type";
@@ -17,7 +17,6 @@ export const Work = () => {
   const [timeEnd, setTimeEnd] = useState<number>(2);
   const [effortt, setEffort] = useState(0);
   const taskName = useSelector((state: any) => state.nameTask);
-  const dispatch = useDispatch();
   const [isDisabledBtn, setIsDisabledBtn] = useState<boolean>(false);
   const [numTasksArray, setNumTasksArray] = useState<TaskList[]>([
     {
@@ -30,19 +29,24 @@ export const Work = () => {
       workDay: 0,
     },
   ]);
-  console.log(timeStart, timeEnd,effortt, "Session");
+  const differenceDayss = () => {
+    const oneDay = 24 * 60 * 60 * 1000; // milliseconds in a day
+    const endDateTime = new Date(endDate).getTime();
+    const startDateTime = new Date(startDate).getTime();
+    const differenceDays = Math.round((endDateTime - startDateTime) / oneDay);
+    return differenceDays;
+  };
 
   useEffect(() => {
-    const newDate = differenceInDays(endDate, startDate);
-    console.log(newDate,"newDate");
-    
+    const newDate = differenceDayss();
     newDate == 0 && timeStart == 2 ? setTimeEnd(2) : "";
     startDate !== undefined &&
     endDate !== undefined &&
     timeStart == 1 &&
     timeEnd == 2
-      ? setEffort(newDate + 1 + 1)
-      : setEffort(newDate + 1 + 0.5);
+    ? setEffort(newDate + 1)
+    : setEffort(newDate + 0.5);
+    console.log(startDate, endDate, timeStart,timeEnd,effortt, newDate, "iiiiiiiiiiiiiiii");
     numTasksArray.length == 5
       ? setIsDisabledBtn(true)
       : setIsDisabledBtn(false);
@@ -79,19 +83,19 @@ export const Work = () => {
     setEffort(0);
   };
   const caculateEffort = () => {
-    console.log(timeStart, timeEnd, startDate, endDate, 8987678978);
     let effort = 0;
-    const newDate = differenceInDays(endDate, startDate);
+    const newDate =  differenceDayss()
+    // console.log(timeStart, timeEnd, startDate, endDate, newDate, 8987678978);
     if (timeStart == 1 && timeEnd == 2) {
-      effort = newDate + 1 + 1;
+      effort = newDate + 1;
     } else {
-      effort = newDate + 0.5 + 1;
+      effort = newDate + 0.5;
     }
-    console.log(effort, "effort");
+    // console.log(effort, "effort trong hàm caculate");
     setEffort(effort);
     return effort;
   };
-  const handleChangeStartDate = async (date: Date, id: number) => {
+  const handleChangeStartDate = (date: Date, id: number) => {
     const newArray = numTasksArray.map((item: TaskList) => {
       if (date === null) {
         return item;
@@ -100,7 +104,7 @@ export const Work = () => {
         return {
           ...item,
           dateStart: date,
-          workDay: effortt,
+          workDay:effortt,
         };
       }
       return item;
@@ -108,8 +112,8 @@ export const Work = () => {
     setNumTasksArray(newArray);
   };
   // dateStart: format(date, "dd/MM/yyyy"),
-  const handleChangeEndDate = async (date: Date, id: number) => {
-    const effort = await caculateEffort();
+  const handleChangeEndDate = (date: Date, id: number) => {
+    const effort = caculateEffort();
     const newArray = numTasksArray.map((item: TaskList) => {
       if (date === null) {
         return item;
@@ -125,9 +129,9 @@ export const Work = () => {
     });
     setNumTasksArray(newArray);
   };
-  const handleChangeTimeStart = async (time: number, id: number) => {
-    const newDate = differenceInDays(endDate, startDate);
-    const effort = await caculateEffort();
+  const handleChangeTimeStart = (time: number, id: number) => {
+    const newDate =  differenceDayss()
+    const effort = caculateEffort();
     setTimeStart(time);
     const newArray = numTasksArray.map((item: TaskList) => {
       if (item.idComponent == id) {
@@ -139,17 +143,17 @@ export const Work = () => {
             workDay: effortt,
           };
         }
-        return { ...item, sessionStart: time, workDay: effort };
+        return { ...item, sessionStart: time, workDay: effortt };
       }
       return item;
     });
     setNumTasksArray(newArray);
   };
 
-  const handleChangeTimeEnd = async (time: number, id: number) => {
-    const newDate = differenceInDays(endDate, startDate);
-    const effort = await caculateEffort();
-    console.log(effort, "effort");
+  const handleChangeTimeEnd = (time: number, id: number) => {
+    const newDate = differenceDayss()
+    const effort = caculateEffort();
+    // console.log(effort, "effort");
 
     setTimeEnd(time);
     const newArray = numTasksArray.map((item: TaskList) => {
@@ -161,7 +165,7 @@ export const Work = () => {
       }
       return item;
     });
-    console.log(newArray, "newArrray");
+    // console.log(newArray, "newArrray");
 
     setNumTasksArray(newArray);
   };
@@ -224,10 +228,9 @@ export const Work = () => {
                       value={timeEnd}
                       name=""
                       id=""
-                      onChange={(e: any) => { 
+                      onChange={(e: any) => {
                         setTimeEnd(e.target.value);
                         handleChangeTimeEnd(e.target.value, item?.idComponent);
-                       
                       }}
                     >
                       <option value="2">Chiều</option>
