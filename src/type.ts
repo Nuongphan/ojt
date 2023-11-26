@@ -3,8 +3,8 @@ import { type } from "os";
 interface TaskList {
   idComponent: number;
   taskTitleId: number;
-  dateStart: string|Date;
-  dateEnd: string|Date;
+  dateStart: Date;
+  dateEnd: Date;
   sessionStart: number;
   sessionEnd: number;
   workDay: number;

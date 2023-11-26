@@ -4,18 +4,13 @@ import "react-datepicker/dist/react-datepicker.css";
 import { registerLocale } from "react-datepicker";
 import vi from "date-fns/locale/vi";
 import { MdDelete } from "react-icons/md";
-import { differenceInDays, format, formatDistance } from "date-fns";
+import { format } from "date-fns";
 import { useDispatch, useSelector } from "react-redux";
 import CustomSelect, { Task } from "./task";
 import TaskList from "./type";
 
 export const Work = () => {
   registerLocale("vi", vi);
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
-  const [timeStart, setTimeStart] = useState<number>(1);
-  const [timeEnd, setTimeEnd] = useState<number>(2);
-  const [effortt, setEffort] = useState(0);
   const taskName = useSelector((state: any) => state.nameTask);
   const [isDisabledBtn, setIsDisabledBtn] = useState<boolean>(false);
   const [numTasksArray, setNumTasksArray] = useState<TaskList[]>([
@@ -26,10 +21,10 @@ export const Work = () => {
       dateEnd: new Date(),
       sessionStart: 1,
       sessionEnd: 2,
-      workDay: 0,
+      workDay: 1,
     },
   ]);
-  const differenceDayss = () => {
+  const differenceDayss = (endDate: Date, startDate: Date) => {
     const oneDay = 24 * 60 * 60 * 1000; // milliseconds in a day
     const endDateTime = new Date(endDate).getTime();
     const startDateTime = new Date(startDate).getTime();
@@ -38,27 +33,10 @@ export const Work = () => {
   };
 
   useEffect(() => {
-    const newDate = differenceDayss();
-    newDate == 0 && timeStart == 2 ? setTimeEnd(2) : "";
-    startDate !== undefined &&
-    endDate !== undefined &&
-    timeStart == 1 &&
-    timeEnd == 2
-    ? setEffort(newDate + 1)
-    : setEffort(newDate + 0.5);
-    console.log(startDate, endDate, timeStart,timeEnd,effortt, newDate, "iiiiiiiiiiiiiiii");
     numTasksArray.length == 5
       ? setIsDisabledBtn(true)
       : setIsDisabledBtn(false);
-  }, [
-    timeStart,
-    timeEnd,
-    startDate,
-    endDate,
-    effortt,
-    numTasksArray.length,
-    taskName,
-  ]);
+  }, [numTasksArray.length, taskName]);
   const handleTaskRegistration = () => {};
   const handleDeleteComponent = (index: number) => {
     const newData = numTasksArray.filter((item, i) => index !== i);
@@ -73,101 +51,104 @@ export const Work = () => {
       dateEnd: new Date(),
       sessionStart: 1,
       sessionEnd: 2,
-      workDay: 0,
+      workDay: 1,
     };
     setNumTasksArray((prev) => [...prev, newTaskList]);
-    setStartDate(new Date());
-    setEndDate(new Date());
-    setTimeStart(1);
-    setTimeEnd(2);
-    setEffort(0);
-  };
-  const caculateEffort = () => {
-    let effort = 0;
-    const newDate =  differenceDayss()
-    // console.log(timeStart, timeEnd, startDate, endDate, newDate, 8987678978);
-    if (timeStart == 1 && timeEnd == 2) {
-      effort = newDate + 1;
-    } else {
-      effort = newDate + 0.5;
-    }
-    // console.log(effort, "effort trong hàm caculate");
-    setEffort(effort);
-    return effort;
   };
   const handleChangeStartDate = (date: Date, id: number) => {
-    const newArray = numTasksArray.map((item: TaskList) => {
-      if (date === null) {
-        return item;
-      }
-      if (item.idComponent == id) {
-        return {
-          ...item,
-          dateStart: date,
-          workDay:effortt,
-        };
+    const updatedTasksArray = numTasksArray?.map((item: TaskList) => {
+      const newDate = differenceDayss(item?.dateEnd, date);
+
+      if (
+        item?.idComponent === id &&
+        item?.dateEnd &&
+        item?.dateStart &&
+        item?.sessionEnd &&
+        item?.sessionStart
+      ) {
+        const effort =
+          item?.sessionStart == 1 && item?.sessionEnd == 2
+            ? newDate + 1
+            : newDate + 0.5;
+        return { ...item, dateStart: date, workDay: effort };
       }
       return item;
     });
-    setNumTasksArray(newArray);
+    setNumTasksArray(updatedTasksArray);
   };
   // dateStart: format(date, "dd/MM/yyyy"),
   const handleChangeEndDate = (date: Date, id: number) => {
-    const effort = caculateEffort();
-    const newArray = numTasksArray.map((item: TaskList) => {
-      if (date === null) {
-        return item;
-      }
-      if (item.idComponent == id) {
-        return {
-          ...item,
-          dateEnd: date,
-          workDay: effortt,
-        };
+    const updatedTasksArray = numTasksArray?.map((item: TaskList) => {
+      const newDate = differenceDayss(date, item?.dateStart);
+      console.log(newDate);
+
+      if (
+        item?.idComponent === id &&
+        item?.dateEnd &&
+        item?.dateStart &&
+        item?.sessionEnd &&
+        item?.sessionStart
+      ) {
+        const effort =
+          item?.sessionStart == 1 && item?.sessionEnd == 2
+            ? newDate + 1
+            : newDate + 0.5;
+        return { ...item, dateEnd: date, workDay: effort };
       }
       return item;
     });
-    setNumTasksArray(newArray);
+    setNumTasksArray(updatedTasksArray);
   };
   const handleChangeTimeStart = (time: number, id: number) => {
-    const newDate =  differenceDayss()
-    const effort = caculateEffort();
-    setTimeStart(time);
-    const newArray = numTasksArray.map((item: TaskList) => {
-      if (item.idComponent == id) {
-        if (newDate === 0 && time == 2) {
+    const updatedTasksArray = numTasksArray?.map((item: TaskList) => {
+      const newDate = differenceDayss(item?.dateEnd, item?.dateStart);
+      if (
+        item?.idComponent === id &&
+        item?.dateEnd &&
+        item?.dateStart &&
+        item?.sessionEnd &&
+        item?.sessionStart
+      ) {
+        let effort: number = 0;
+        if (newDate == 0 && time == 2) {
+          effort = newDate + 0.5;
           return {
             ...item,
             sessionStart: time,
             sessionEnd: 2,
-            workDay: effortt,
+            workDay: effort,
           };
+        } else if (newDate == 0 && time == 1) {
+          effort = item?.sessionEnd == 2 ? newDate + 1 : newDate + 0.5;
+          return { ...item, sessionStart: time, workDay: effort };
+        } else if (newDate != 0) {
+          effort =
+            time == 1 && item?.sessionEnd == 2 ? newDate + 1 : newDate + 0.5;
+          return { ...item, sessionStart: time, workDay: effort };
         }
-        return { ...item, sessionStart: time, workDay: effortt };
       }
       return item;
     });
-    setNumTasksArray(newArray);
+    setNumTasksArray(updatedTasksArray);
   };
-
   const handleChangeTimeEnd = (time: number, id: number) => {
-    const newDate = differenceDayss()
-    const effort = caculateEffort();
-    // console.log(effort, "effort");
-
-    setTimeEnd(time);
-    const newArray = numTasksArray.map((item: TaskList) => {
-      if (item.idComponent == id) {
-        if (newDate === 0 && timeStart == 2) {
-          return { ...item, sessionEnd: 2, workDay: effortt };
-        }
-        return { ...item, sessionEnd: time, workDay: effortt };
+    const updatedTasksArray = numTasksArray?.map((item: TaskList) => {
+      const newDate = differenceDayss(item?.dateEnd, item?.dateStart);
+      if (
+        item?.idComponent === id &&
+        item?.dateEnd &&
+        item?.dateStart &&
+        item?.sessionEnd &&
+        item?.sessionStart
+      ) {
+        const timeEnd = newDate == 0 && item?.sessionStart == 2 ? 2 : time;
+        const effort =
+          item?.sessionStart == 1 && timeEnd == 2 ? newDate + 1 : newDate + 0.5;
+        return { ...item, sessionEnd: timeEnd, workDay: effort };
       }
       return item;
     });
-    // console.log(newArray, "newArrray");
-
-    setNumTasksArray(newArray);
+    setNumTasksArray(updatedTasksArray);
   };
   console.log(numTasksArray, 5555555555);
 
@@ -190,19 +171,20 @@ export const Work = () => {
                   <DatePicker
                     className="datepicker"
                     locale="vi"
-                    selected={startDate}
-                    onSelect={(date: Date) => setStartDate(date)} //when day is clicked
+                    selected={item?.dateStart}
+                    onSelect={(date: Date) =>
+                      handleChangeStartDate(date, item?.idComponent)
+                    } //when day is clicked
                     onChange={(date: Date) =>
                       handleChangeStartDate(date, item?.idComponent)
                     } //only when value has changed
                   />
                   <select
                     className="time"
-                    value={timeStart}
-                    onChange={(e: any) => {
-                      setTimeStart(e.target.value);
-                      handleChangeTimeStart(e.target.value, item?.idComponent);
-                    }}
+                    value={item?.sessionStart}
+                    onChange={(e: any) =>
+                      handleChangeTimeStart(e.target.value, item?.idComponent)
+                    }
                     name=""
                     id=""
                   >
@@ -216,8 +198,10 @@ export const Work = () => {
                     <DatePicker
                       className="datepicker"
                       locale="vi"
-                      selected={endDate}
-                      onSelect={(date: Date) => setEndDate(date)} //when day is clicked
+                      selected={item?.dateEnd}
+                      onSelect={(date: Date) =>
+                        handleChangeEndDate(date, item?.idComponent)
+                      } //when day is clicked
                       onChange={(date: Date) =>
                         handleChangeEndDate(date, item?.idComponent)
                       } //only when value has changed
@@ -225,13 +209,12 @@ export const Work = () => {
 
                     <select
                       className="time"
-                      value={timeEnd}
+                      value={item?.sessionEnd}
                       name=""
                       id=""
-                      onChange={(e: any) => {
-                        setTimeEnd(e.target.value);
-                        handleChangeTimeEnd(e.target.value, item?.idComponent);
-                      }}
+                      onChange={(e: any) =>
+                        handleChangeTimeEnd(e.target.value, item?.idComponent)
+                      }
                     >
                       <option value="2">Chiều</option>
                       <option value="1">Sáng</option>
@@ -245,7 +228,7 @@ export const Work = () => {
                   disabled
                   className="effortInput"
                   type="text"
-                  value={effortt}
+                  value={item?.workDay}
                 />
               </div>
             </div>
