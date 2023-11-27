@@ -4,21 +4,23 @@ import "react-datepicker/dist/react-datepicker.css";
 import { registerLocale } from "react-datepicker";
 import vi from "date-fns/locale/vi";
 import { MdDelete } from "react-icons/md";
-import { format } from "date-fns";
 import { useSelector } from "react-redux";
 import TaskList from "./type";
 import SelectTask from "./task";
+import Moment from "react-moment";
+import "moment/locale/vi";
+import moment from "moment";
+import axios from "axios";
 
 export const Work = () => {
   registerLocale("vi", vi);
   const taskName = useSelector((state: any) => state.nameTask);
   const id = taskName.value.id;
+  const [error, setError]= useState<{msg:string, i:null|number}>({msg:"", i:null})
   const [isDisabledBtn, setIsDisabledBtn] = useState<boolean>(false);
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
-  // const [selectedComponentIndex, setSelectedComponentIndex] = useState<
-  //   number | null
-  // >(null);
+  const [selectedComponentIndex, setSelectedComponentIndex] = useState<
+    number | null
+  >(null);
   const [numTasksArray, setNumTasksArray] = useState<TaskList[]>([
     {
       idComponent: 1,
@@ -50,7 +52,7 @@ export const Work = () => {
         endPickerOpen: index === i,
       }))
     );
-    // setSelectedComponentIndex(index);
+    setSelectedComponentIndex(index);
   };
 
   const handleEndPickerClick = (index: number) => {
@@ -61,7 +63,7 @@ export const Work = () => {
         startPickerOpen: index === i,
       }))
     );
-    // setSelectedComponentIndex(index);
+    setSelectedComponentIndex(index);
   };
 
   useEffect(() => {
@@ -84,7 +86,6 @@ export const Work = () => {
     };
     updatedTasksArray();
   }, [taskName.value.id]);
-  const handleTaskRegistration = () => {};
   const handleDeleteComponent = (index: number) => {
     const newData = numTasksArray.filter((item, i) => index !== i);
     setNumTasksArray(newData);
@@ -122,7 +123,7 @@ export const Work = () => {
     });
     setNumTasksArray(updatedTasksArray);
   };
-  // dateStart: format(date, "dd/MM/yyyy"),
+
   const handleChangeEndDate = (date: Date, id: number) => {
     const updatedTasksArray = numTasksArray?.map((item: TaskList) => {
       const newDate = differenceDayss(date, item?.dateStart);
@@ -131,7 +132,7 @@ export const Work = () => {
           item?.sessionStart == 1 && item?.sessionEnd == 2
             ? newDate + 1
             : newDate + 0.5;
-            setPickerStates((prev) =>
+        setPickerStates((prev) =>
           prev.map((state, i) => ({
             ...state,
             startPickerOpen: false,
@@ -183,7 +184,32 @@ export const Work = () => {
     });
     setNumTasksArray(updatedTasksArray);
   };
-  console.log(numTasksArray, 5555555555);
+  const handleTaskRegistration = () => {
+    const newArray = numTasksArray.map((item: any, index) => {
+      if (item?.taskTitleId == undefined) {
+        setError({ msg: "Vui lòng chọn tên công việc.", i: index });
+        return null; 
+      }
+      // Kiểm tra và định dạng ngày tháng
+      const formattedItem = {
+        ...item,
+        dateStart:  moment(item?.dateStart).format("DD/MM/YYYY"),
+        dateEnd: moment(item?.dateEnd).format("DD/MM/YYYY"),
+      };
+  
+      return formattedItem;
+    });
+  
+    // Kiểm tra xem có lỗi không
+    if (newArray.some(item => item === undefined||null)) {
+      console.log("Có lỗi xảy ra. Không thể đăng ký.");
+    } else {
+      console.log(newArray, "oooooooooooooooooooooooooooooooo");
+      // Gọi API ở đây
+    }
+  };
+  
+ 
 
   return (
     <>

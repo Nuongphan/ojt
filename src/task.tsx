@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { taskName } from "./store/reducer/nameTaskSlice";
+import { getTaskName } from "./store/reducer/getTaskNameSlice";
 export interface Task {
   id: number;
   label: string;
@@ -27,6 +28,7 @@ const SelectTask = (props:IdProp)=> {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredOptions, setFilteredOptions] = useState<Task[]>(options);
   const dispatch = useDispatch();
+
   const handleToggle = () => {
     setIsOpen(true);
   };
@@ -35,12 +37,12 @@ const SelectTask = (props:IdProp)=> {
     setIsOpen(false);
     setSearchTerm("");
     dispatch(taskName({option, id:props.id}))
-    console.log(props.id, "iiiiiiiiiiiiiiiiiiiii");
-    
-    
   };
+const taskNameGetFromData= useSelector((state:any)=> state.getTaskName)
+// console.log(taskNameGetFromData, "fffffffffffff");
 
   useEffect(() => {
+    // dispatch(getTaskName())
     if (searchTerm.length === 0) {
       setFilteredOptions(options);
     } else {
