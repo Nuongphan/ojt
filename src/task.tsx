@@ -5,9 +5,10 @@ export interface Task {
   id: number;
   label: string;
 }
-
-const CustomSelect = ()=> {
-
+interface IdProp {
+  id:number
+}
+const SelectTask = (props:IdProp)=> {
   const options: Task[] = [
     { id: 1, label: "Task 1" },
     { id: 2, label: "Task 2888888888888888888888888888888888888888888" },
@@ -33,7 +34,9 @@ const CustomSelect = ()=> {
     setSelectedOption(option);
     setIsOpen(false);
     setSearchTerm("");
-    dispatch(taskName({option, }))
+    dispatch(taskName({option, id:props.id}))
+    console.log(props.id, "iiiiiiiiiiiiiiiiiiiii");
+    
     
   };
 
@@ -87,4 +90,4 @@ const CustomSelect = ()=> {
   );
 };
 
-export default CustomSelect;
+export default SelectTask;
